@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สรุปวิเคราะห์แคทไอออน (Cation Analysis Flowchart)</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        /* Base styles */
+        body {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            font-family: 'Prompt', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* -------------------------------------
+           Vertical Tree CSS (Top to Bottom) - Optimized for A4 Landscape
+           ------------------------------------- */
+        .print-container {
+            width: 100%;
+            min-height: 80vh;
+            display: block; 
+            text-align: center;
+            padding: 40px 20px;
+            overflow-x: auto;
+            transition: all 0.3s ease;
+        }
+
+        .tree {
+            display: inline-block; 
+            text-align: left; 
+        }
+
+        .tree ul {
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+            position: relative;
+            margin: 0;
+            padding-left: 0;
+        }
+
+        .tree li {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 8px 0 8px; 
+            transition: all 0.3s ease;
+        }
+
+        /* Horizontal line connecting siblings */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 50%;
+            border-top: 2px solid #94a3b8;
+            width: 50%;
+            height: 20px;
+        }
+        .tree li::after {
+            right: auto;
+            left: 50%;
+            border-left: 2px solid #94a3b8;
+        }
+
+        /* Clean up borders for first/last children */
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 2px solid #94a3b8; border-top-right-radius: 6px; }
+        .tree li:first-child::after { border-top-left-radius: 6px; }
+
+        /* Vertical line dropping down to children */
+        .tree ul ul::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            border-left: 2px solid #94a3b8;
+            width: 0;
+            height: 20px;
+            transform: translateX(-50%);
+        }
+
+        /* Root exceptions */
+        .tree > ul { padding-top: 0; }
+        .tree > ul > li { padding-top: 0; }
+        .tree > ul > li::before, .tree > ul > li::after { display: none; }
+
+        /* Node Box Styles */
+        .node-box {
+            background: white;
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 250px; /* ขนาดปกติ */
+            font-size: 13.5px;
+            line-height: 1.45;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        /* สไตล์ความกว้างพิเศษตามที่รีเควส */
+        .node-box.root-node { width: 400px; }
+        .node-box.node-narrow { width: 210px; } /* กล่องวงสีเขียว: ผอมลง */
+        .node-box.node-wide { width: 310px; }   /* กล่องวงสีแดง: อ้วนขึ้น */
+
+        /* Interactive Classes */
+        .detail-only {
+            display: none;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed #cbd5e1;
+            color: #475569;
+            font-size: 11.5px;
+            line-height: 1.4;
+            text-align: left;
+            background: rgba(255,255,255,0.6);
+            border-radius: 4px;
+        }
+        
+        .show-detail .detail-only {
+            display: block;
+        }
+
+        /* KaTeX & Equation Overrides */
+        .math-block {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 4px;
+            border-radius: 6px;
+            margin-top: 6px;
+            font-size: 0.85em;
+            color: #334155;
+            border: 1px dashed rgba(0,0,0,0.2);
+            text-align: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: thin;
+        }
+        .math-block::-webkit-scrollbar { height: 4px; }
+        .math-block::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .katex-display { margin: 2px 0 !important; }
+
+        /* Hide elements and setup scale for Print (A4 Landscape) */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 5mm; 
+            }
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print { display: none !important; }
+            
+            .print-container {
+                width: 100%;
+                display: block;
+                padding: 0;
+                overflow: visible;
+            }
+            
+            /* ปรับ zoom ลดลงนิดหน่อยเพราะมีบางกล่องอ้วนขึ้น */
+            .tree {
+                zoom: 0.78; 
+            }
+            .show-detail .tree {
+                zoom: 0.72;
+            }
+            
+            .node-box {
+                box-shadow: none; 
+            }
+            
+            @-moz-document url-prefix() {
+                .tree {
+                    transform: scale(0.78);
+                    transform-origin: top center;
+                    margin-bottom: -15%;
+                }
+                .show-detail .tree {
+                    transform: scale(0.72);
+                    margin-bottom: -20%;
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print sticky top-0 z-50 bg-white border-b shadow-sm p-4 flex flex-wrap justify-between items-center gap-4 w-full">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">🧪 ผังวิเคราะห์แคทไอออน (Qualitative Analysis)</h1>
+            <p class="text-sm text-slate-500 font-medium">รูปแบบเต็มจอ A4 แนวนอน (มีไอออน 1 ชนิด: $\mathrm{Ag^+}$, $\mathrm{Pb^{2+}}$, $\mathrm{Ni^{2+}}$, $\mathrm{Fe^{3+}}$, $\mathrm{Mn^{2+}}$)</p>
+        </div>
+        <div class="flex gap-3">
+            <button id="toggleDetailBtn" onclick="toggleDetail()" class="bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2 rounded-lg font-medium hover:bg-amber-100 transition shadow-sm w-44 text-left">
+                <span id="toggleDetailText">📝 ระดับ: สรุปย่อ</span>
+            </button>
+            <button id="toggleEqBtn" onclick="toggleEquations()" class="bg-sky-50 text-sky-700 border border-sky-200 px-4 py-2 rounded-lg font-medium hover:bg-sky-100 transition shadow-sm">
+                <span id="toggleText">👀 ซ่อนสมการเคมี</span>
+            </button>
+            <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-medium hover:bg-slate-700 transition shadow-sm flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                ปริ้น A4 (Browser Print)
+            </button>
+        </div>
+    </div>
+
+    <div class="print-container" id="flowchart-container">
+        <div class="tree">
+            <ul>
+                <li>
+                    <div class="node-box root-node border-slate-400 border-2 bg-white">
+                        <div class="text-[16px] font-bold text-slate-800">📦 สารตัวอย่าง (ของแข็ง)</div>
+                        <div class="mt-1 pt-1 border-t border-slate-200 text-[13px] text-slate-700 text-left leading-relaxed">
+                            <b class="text-slate-800">การหาตัวทำละลาย:</b><br>
+                            1. น้ำ $1\ \mathrm{mL}$ (อุ่น $2-3$ นาทีถ้าไม่ละลาย)<br>
+                            2. เปลี่ยนสารใหม่ ใช้ <span class="whitespace-nowrap">$2.0\ \mathrm{M}\ \mathrm{HCl}$</span> (อุ่นถ้าไม่ละลาย)<br>
+                            3. เปลี่ยนสารใหม่ ใช้ <span class="whitespace-nowrap">$2.0\ \mathrm{M}\ \mathrm{HNO_3}$</span> (อุ่นถ้าไม่ละลาย)
+                            <div class="detail-only">
+                                * ห้ามใช้สารหลอดเดิมมาเติมกรดเด็ดขาด ต้องตักผงของแข็งใหม่ทุกครั้งที่เปลี่ยนตัวทำละลาย
+                            </div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-slate-200 text-sm font-bold text-sky-800 bg-sky-50 rounded px-3 py-2 shadow-sm text-center">
+                            <b>ตอนที่ 1:</b> หยด <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{HCl}$</span> $1-2$ หยด<br>
+                            (หยดเพิ่มจนตกตะกอนสมบูรณ์ แล้วปั่นเซนตริฟิวจ์)
+                            <div class="detail-only font-normal text-slate-600 mt-1 pt-1 border-t border-slate-200 text-left">
+                                💡 ถ้าหยดแล้วขุ่นขาวทันที = เป็นแก๊ง Ag/Pb<br>
+                                💡 ถ้าหยดแล้วยังใสปิ๊ง = เป็นแก๊ง Ni/Fe/Mn
+                            </div>
+                        </div>
+                        <div class="math-block eq-toggle text-xs">
+                            $$\begin{aligned} \mathrm{Ag^+} + \mathrm{Cl^-} &\rightarrow \mathrm{AgCl}_{(s)} \\ \mathrm{Pb^{2+}} + 2\mathrm{Cl^-} &\rightarrow \mathrm{PbCl}_{2(s)} \end{aligned}$$
+                        </div>
+                    </div>
+                    <ul>
+                        <li>
+                            <!-- กล่องวงสีเขียว: ปรับให้ผอมลง (node-narrow) -->
+                            <div class="node-box node-narrow border-amber-400 border-2 bg-amber-50">
+                                <div class="text-[14px] font-bold text-amber-900">☁️ ตะกอนสีขาว</div>
+                                <div class="text-xs text-amber-700">($\mathrm{AgCl}_{(s)}$, $\mathrm{PbCl}_{2(s)}$)</div>
+                                <div class="mt-2 pt-2 border-t border-amber-200 text-slate-800 text-[12px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm">
+                                    <b>ตอน 2:</b> เติมน้ำ $1\ \mathrm{mL}$<br>➔ <b class="text-red-600">อุ่นร้อน $2-3$ นาที</b><br>➔ <u>รีบปั่นขณะร้อนจัด</u>
+                                    <div class="detail-only">
+                                        คนด้วยแท่งแก้วขณะอุ่น<br>
+                                        ⚠️ ต้องรีบแยกตอนน้ำยังร้อน ไม่งั้นตะกอนตะกั่วจะตกผลึกกลับมาใหม่
+                                    </div>
+                                </div>
+                            </div>
+                            <ul>
+                                <li>
+                                    <!-- กล่องวงสีแดง (ซ้าย): ปรับให้อ้วนขึ้น (node-wide) -->
+                                    <div class="node-box node-wide border-sky-400 border-2 bg-sky-50">
+                                        <div class="text-[14px] font-bold text-sky-900">💧 สารละลายใส</div>
+                                        <div class="text-[11px] text-sky-700">($\mathrm{Pb^{2+}}$ ละลายในน้ำร้อน)</div>
+                                        <div class="mt-2 pt-2 border-t border-sky-200 text-slate-800 text-[12.5px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm">
+                                            <b>ทดสอบ:</b> หยด <span class="whitespace-nowrap">$0.1\ \mathrm{M}\ \mathrm{K_2CrO_4}$</span> $2-3$ หยด
+                                            <div class="detail-only text-[11px]">
+                                                * สามารถยืนยันผลเพิ่มโดยการนำตะกอนเหลืองไปละลายใน $6.0\ \mathrm{M}\ \mathrm{NaOH}$ (ตะกอนเหลืองจะหายไปเป็นสารละลายใส)
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            <div class="node-box border-emerald-500 border-[3px] bg-emerald-50">
+                                                <div class="text-[15px] font-bold text-yellow-600 drop-shadow-sm">🟡 ตะกอนสีเหลือง</div>
+                                                <div class="text-sm font-bold text-emerald-800 mt-1">➔ สรุปพบ $\mathrm{Pb^{2+}}$</div>
+                                                <div class="math-block eq-toggle">
+                                                    $$\mathrm{Pb^{2+}} + \mathrm{CrO_4^{2-}} \rightarrow \mathrm{PbCrO}_{4(s)}$$
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <div class="node-box border-sky-400 border-2 bg-sky-50">
+                                        <div class="text-[14px] font-bold text-sky-900">☁️ ตะกอนขาวเดิม</div>
+                                        <div class="text-[11px] text-sky-700">($\mathrm{AgCl}_{(s)}$ ไม่ละลายน้ำร้อน)</div>
+                                        <div class="mt-2 pt-2 border-t border-sky-200 text-slate-800 text-[12px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm leading-snug">
+                                            ล้างตะกอนด้วยน้ำร้อน $2\ \mathrm{mL}$ ทิ้งก่อน<br>
+                                            <b>ทดสอบ:</b> หยด <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{NH_3}$</span> $1\ \mathrm{mL}$ (ตะกอนจะละลายใส)<br>
+                                            ➔ หยด <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{HNO_3}$</span> ทีละหยด (เทสจนเป็นกรด)
+                                            <div class="detail-only">
+                                                * กรดจะไปทำลายพันธะแอมโมเนีย ทำให้ตะกอนขาวกลับมาอีกครั้ง
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            <div class="node-box border-emerald-500 border-[3px] bg-emerald-50">
+                                                <div class="text-[15px] font-bold text-slate-600 drop-shadow-sm">☁️ ตะกอนขาวกลับมา</div>
+                                                <div class="text-sm font-bold text-emerald-800 mt-1">➔ สรุปพบ $\mathrm{Ag^+}$</div>
+                                                <div class="math-block eq-toggle text-[11px]">
+                                                    $$\begin{aligned} &[\mathrm{Ag(NH_3)_2}]^+ + \mathrm{Cl^-} + 2\mathrm{H^+} \\ &\rightarrow \mathrm{AgCl}_{(s)} + 2\mathrm{NH_4^+} \end{aligned}$$
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <div class="node-box border-amber-400 border-2 bg-amber-50">
+                                <div class="text-[14px] font-bold text-amber-900">💧 สารละลายใส</div>
+                                <div class="text-[11px] text-amber-700">(ไม่มีตะกอน $\mathrm{Ag/Pb}$)</div>
+                                <div class="mt-2 pt-2 border-t border-amber-200 text-slate-800 text-[12px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm leading-relaxed">
+                                    <b>ตกตะกอน:</b> หยด <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{NaOH}$</span> จนเป็นเบส (+เผื่อ $0.5\ \mathrm{mL}$)<br>
+                                    ➔ เติม <span class="whitespace-nowrap">$3\%\ \mathrm{H_2O_2}$</span> $1\ \mathrm{mL}$ ➔ <b class="whitespace-nowrap">อุ่นร้อน $2$ นาที</b> ➔ ปั่น ➔ <b class="text-red-600 whitespace-nowrap">ทิ้งน้ำใส เก็บตะกอน</b>
+                                    <div class="detail-only text-[11px]">
+                                        การอุ่น: เทใส่ชามกระเบื้องนำไปอุ่นบน hot plate จนปริมาตรลดลงเหลือครึ่งเดียว เพื่อบังคับให้ไอออนตกตะกอนให้หมด
+                                    </div>
+                                </div>
+                            </div>
+                            <ul>
+                                <li>
+                                    <div class="node-box border-amber-400 border-2 bg-amber-50">
+                                        <div class="text-[14px] font-bold text-amber-900">🪨 ตะกอนสีต่างๆ</div>
+                                        <div class="text-[11px] text-amber-700">(เขียว $\mathrm{Ni}$ / น้ำตาล $\mathrm{Fe}$ / ดำ $\mathrm{Mn}$)</div>
+                                        <div class="mt-2 pt-2 border-t border-amber-200 text-slate-800 text-[12px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm leading-snug">
+                                            <b>ตอน 3:</b> ล้างตะกอนด้วยน้ำแล้วทิ้งน้ำก่อน<br>
+                                            ➔ ละลายด้วย <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{HNO_3}$</span> $10$ หยด + <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{HCl}$</span> $5-6$ หยด ➔ อุ่นจนใส<br>
+                                            ➔ เติม <span class="whitespace-nowrap">$4.0\ \mathrm{M}\ \mathrm{NH_4Cl}$</span> $4$ หยด ➔ ปรับเบสด้วย <span class="whitespace-nowrap">$15\ \mathrm{M}\ \mathrm{NH_3}$</span> ➔ เติม <span class="whitespace-nowrap">$3\%\ \mathrm{H_2O_2}$</span> $1\ \mathrm{mL}$ ➔ ปั่นแยก
+                                            <div class="detail-only text-[11px]">
+                                                * ขั้นตอนนี้จะดึง $\mathrm{Ni}$ ให้ออกไปอยู่ในสารละลาย ส่วน $\mathrm{Fe, Mn}$ จะยังคงเป็นตะกอน
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            <div class="node-box border-sky-400 border-2 bg-sky-50">
+                                                <div class="text-[14px] font-bold text-sky-900">💧 สารละลายสีฟ้า</div>
+                                                <div class="text-[11px] text-sky-700">($[\mathrm{Ni(NH_3)_6}]^{2+}$)</div>
+                                                <div class="mt-2 pt-2 border-t border-sky-200 text-slate-800 text-[12px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm">
+                                                    <b>ทดสอบ:</b> หยด $\mathrm{DMG}$ $2-3$ หยด
+                                                    <div class="detail-only">
+                                                        เขย่าหลอดให้แรง เพื่อให้แอมโมเนียเชิงซ้อนทำปฏิกิริยากับ Dimethyl glyoxime ได้อย่างสมบูรณ์
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <ul>
+                                                <li>
+                                                    <div class="node-box border-emerald-500 border-[3px] bg-emerald-50">
+                                                        <div class="text-[15px] font-bold text-red-600 drop-shadow-sm">🔴 ตะกอนสีแดง</div>
+                                                        <div class="text-sm font-bold text-emerald-800 mt-1">➔ สรุปพบ $\mathrm{Ni^{2+}}$</div>
+                                                        <div class="math-block eq-toggle text-[11px]">
+                                                            $$\begin{aligned} &[\mathrm{Ni(NH_3)_6}]^{2+} + 2\mathrm{H_2DMG} \\ &\rightarrow \mathrm{Ni(HDMG)}_{2(s)} + 4\mathrm{NH_3} \end{aligned}$$
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <div class="node-box border-sky-400 border-2 bg-sky-50">
+                                                <div class="text-[14px] font-bold text-sky-900">🪨 ตะกอนน้ำตาล/ดำ</div>
+                                                <div class="text-[11px] text-sky-700">($\mathrm{Fe(OH)_3}$ หรือ $\mathrm{MnO_2}$)</div>
+                                                <div class="mt-2 pt-2 border-t border-sky-200 text-slate-800 text-[12px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm leading-snug">
+                                                    ล้างตะกอนด้วยน้ำ $1\ \mathrm{mL}$ ทิ้งก่อน<br>
+                                                    ➔ ละลายด้วย <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{HCl}$</span> $1\ \mathrm{mL}$ + <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{HNO_3}$</span> $2$ หยด<br>
+                                                    ➔ อุ่นจนใส ➔ <b class="whitespace-nowrap">แบ่งสารละลายใส่ $3$ หลอด</b>
+                                                    <div class="detail-only text-[11px]">
+                                                        ต้องต้มอุ่นให้ตะกอนละลายใสกลายเป็นน้ำทั้งหมด ก่อนที่จะแบ่งใส่หลอดทดลองย่อย
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <ul>
+                                                <li>
+                                                    <!-- กล่องวงสีแดง (กลาง): ปรับให้อ้วนขึ้น (node-wide) -->
+                                                    <div class="node-box node-wide border-purple-400 border-2 bg-purple-50">
+                                                        <div class="text-[13.5px] font-bold text-purple-900">🧪 เทส $\mathrm{Fe^{3+}}$ (หลอด 1,2)</div>
+                                                        <div class="mt-1 pt-1 border-t border-purple-200 text-slate-800 text-[12.5px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm leading-relaxed">
+                                                            หลอด 1: หยด <span class="whitespace-nowrap">$1.0\ \mathrm{M}\ \mathrm{KSCN}$</span> $4-5$ หยด<br>
+                                                            <span class="text-[12px] text-slate-600">หลอด 2: หยด <span class="whitespace-nowrap">$0.1\ \mathrm{M}\ \mathrm{K_4Fe(CN)_6}$</span> $2-3$ หยด</span>
+                                                            <div class="detail-only text-[11px]">
+                                                                * ในห้องสอบ สามารถเลือกทำหลอดใดหลอดหนึ่งก็ได้ เพราะให้ผลสรุปเหมือนกัน
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <ul>
+                                                        <li>
+                                                            <div class="node-box border-emerald-500 border-[3px] bg-emerald-50">
+                                                                <div class="text-[14.5px] font-bold text-red-700 drop-shadow-sm">🩸 สีแดงเลือดนก</div>
+                                                                <div class="text-[10.5px] text-slate-600 leading-tight">(หรือตะกอนน้ำเงินปรัสเซียน)</div>
+                                                                <div class="text-sm font-bold text-emerald-800 mt-1">➔ สรุปพบ $\mathrm{Fe^{3+}}$</div>
+                                                                <div class="math-block eq-toggle text-[11.5px]">
+                                                                    $$\mathrm{Fe^{3+}} + \mathrm{SCN^-} \rightarrow [\mathrm{FeSCN}]^{2+}$$
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                                <li>
+                                                    <!-- กล่องวงสีแดง (ขวา): ปรับให้อ้วนขึ้น (node-wide) -->
+                                                    <div class="node-box node-wide border-purple-400 border-2 bg-purple-50">
+                                                        <div class="text-[13.5px] font-bold text-purple-900">🧪 เทส $\mathrm{Mn^{2+}}$ (หลอด 3)</div>
+                                                        <div class="mt-1 pt-1 border-t border-purple-200 text-slate-800 text-[12.5px] text-left bg-white bg-opacity-70 rounded px-2 py-1.5 shadow-sm leading-relaxed">
+                                                            หยด <span class="whitespace-nowrap">$6.0\ \mathrm{M}\ \mathrm{HNO_3}$</span> $2$ หยด แล้วอุ่น<br>
+                                                            ➔ เติมผง $\mathrm{NaBiO_3}$ $1$ ช้อนเล็ก ➔ เขย่า
+                                                            <div class="detail-only text-[11px]">
+                                                                👀 ทริค: ต้องจับตาดูสีทันทีหลังเติมผง $\mathrm{NaBiO_3}$ ลงไป เพราะสีด่างทับทิมจะสลายตัวและหายไปเร็วมาก
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <ul>
+                                                        <li>
+                                                            <div class="node-box border-emerald-500 border-[3px] bg-emerald-50">
+                                                                <div class="text-[14.5px] font-bold drop-shadow-sm" style="color: #8B0062; text-shadow: 0px 1px 1px rgba(139,0,98,0.2);">🟣 สีม่วงแดงด่างทับทิม</div>
+                                                                <div class="text-[10.5px] text-slate-600 leading-tight">(เปอร์แมงกาเนต - สีจางเร็วมาก)</div>
+                                                                <div class="text-sm font-bold text-emerald-800 mt-1">➔ สรุปพบ $\mathrm{Mn^{2+}}$</div>
+                                                                <div class="math-block eq-toggle text-[11.5px]">
+                                                                    $$\mathrm{Mn^{2+}} \xrightarrow{\mathrm{NaBiO_3}} \mathrm{MnO_4^-}$$
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Initialize KaTeX
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError : false
+            });
+        });
+
+        // Toggle Equations Logic
+        let eqVisible = true;
+        function toggleEquations() {
+            const eqs = document.querySelectorAll('.eq-toggle');
+            const btnText = document.getElementById('toggleText');
+            
+            eqVisible = !eqVisible;
+            
+            eqs.forEach(eq => {
+                eq.style.display = eqVisible ? 'block' : 'none';
+            });
+
+            btnText.innerHTML = eqVisible ? "👀 ซ่อนสมการเคมี" : "🧪 แสดงสมการเคมี";
+        }
+
+        // Toggle Detail Logic
+        let isDetailed = false;
+        function toggleDetail() {
+            const container = document.getElementById('flowchart-container');
+            const btnText = document.getElementById('toggleDetailText');
+            
+            isDetailed = !isDetailed;
+            
+            if(isDetailed) {
+                container.classList.add('show-detail');
+                btnText.innerHTML = "🔍 ระดับ: ละเอียด";
+            } else {
+                container.classList.remove('show-detail');
+                btnText.innerHTML = "📝 ระดับ: สรุปย่อ";
+            }
+        }
+    </script>
+</body>
+</html>
